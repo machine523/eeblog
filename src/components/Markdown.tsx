@@ -12,7 +12,10 @@
  * Tailwind 的数字规则：my-1=0.25rem，my-2=0.5rem，my-3=0.75rem，以此类推
  * ------------------------------------------------------------
  * 支持的语法：## / ### 标题、段落、> 引用、- 列表、```代码块、
- * **加粗**、*斜体*、`行内代码`、[链接](url)
+ * **加粗**、*斜体*、`行内代码`、[链接](url)、![图片描述](图片路径)
+ *
+ * 图片用法：![描述](/images/xxx.png) —— 必须单独占一行；
+ * 图片文件放在仓库的 public/images/ 文件夹里（详见写作指南）
  */
 import type { ReactNode } from 'react'
 
@@ -71,9 +74,10 @@ type Block =
   | { type: 'h2' | 'h3'; text: string }
   | { type: 'quote'; lines: string[] }
   | { type: 'ul'; items: string[] }
+  | { type: 'img'; alt: string; src: string }
   | { type: 'p'; text: string }
 
-/** 把 Markdown 原文逐行切分成一个个「块」（标题/段落/引用/列表/代码） */
+/** 把 Markdown 原文逐行切分成一个个「块」（标题/段落/引用/列表/图片/代码） */
 function parseBlocks(src: string): Block[] {
   const lines = src.replace(/\r\n/g, '\n').split('\n')
   const blocks: Block[] = []
@@ -112,6 +116,14 @@ function parseBlocks(src: string): Block[] {
       continue
     }
 
+    // ![描述](路径)：图片，必须单独占一行（路径里不能有空格和括号）
+    const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/)
+    if (imgMatch) {
+      blocks.push({ type: 'img', alt: imgMatch[1], src: imgMatch[2] })
+      i++
+      continue
+    }
+
     // > 开头：引用块，连续的行合并
     if (trimmed.startsWith('> ')) {
       const quoteLines: string[] = []
@@ -134,13 +146,13 @@ function parseBlocks(src: string): Block[] {
       continue
     }
 
-    // 其余：普通段落（连续非空行合并成一段）
+    // 其余：普通段落（连续非空行合并成一段；遇到图片行也要停下）
     const para: string[] = [trimmed]
     i++
     while (
       i < lines.length &&
       lines[i].trim() !== '' &&
-      !/^(#{2,3}\s|>\s|-\s|```)/.test(lines[i].trim())
+      !/^(#{2,3}\s|>\s|-\s|```|!\[)/.test(lines[i].trim())
     ) {
       para.push(lines[i].trim())
       i++
@@ -177,6 +189,23 @@ export default function Markdown({ content }: { content: string }) {
                     {block.lines.join('\n')}
                   </code>
                 </pre>
+              </figure>
+            )
+          case 'img':
+            /* 图片：圆角白底卡片 + 细边框，[] 里的描述显示为图片下方的小字注解 */
+            return (
+              <figure key={key} className="my-5 overflow-hidden rounded-lg border border-leaf-900/10 bg-white shadow-sm">
+                <img
+                  src={block.src}
+                  alt={block.alt}
+                  loading="lazy"
+                  className="w-full object-contain"
+                />
+                {block.alt && (
+                  <figcaption className="border-t border-leaf-900/5 px-3 py-2 text-center text-xs text-foreground/50">
+                    {block.alt}
+                  </figcaption>
+                )}
               </figure>
             )
           case 'h2':

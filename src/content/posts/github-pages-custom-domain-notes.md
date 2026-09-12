@@ -13,6 +13,8 @@ featured: true
 
 ## 整体原理（一句话版）
 
+![域名访问的完整链路：浏览器 → DNS 解析 → GitHub Pages → 返回网页](/images/dns-resolution-flow.png)
+
 ```
 浏览器输入域名 → DNS 把域名翻译成 GitHub 的服务器 IP → GitHub 根据域名找到你的仓库 → 返回网页
 ```
