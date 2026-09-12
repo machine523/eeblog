@@ -78,7 +78,9 @@ blog/
 
 ## 🌐 线上访问（已上线 ✅）
 
-**本站已通过 GitHub Pages 部署上线：<https://lujunhong.cn>**
+**本站已通过 GitHub Pages 部署上线：<https://eebolg.online>**
+
+（旧博客仍使用 <https://lujunhong.cn>，两个站点互不影响。）
 
 每次 push 到 main 分支，GitHub Actions 自动构建并发布，几分钟后线上更新。
 也就是说：**在任何电脑的 GitHub 网页上编辑 `src/content/posts/` 里的文章并保存，网站自动更新。**
