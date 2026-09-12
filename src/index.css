@@ -1,0 +1,165 @@
+/* ============================================================
+ * 全局样式表（决定整个网站长什么样的核心文件）
+ * ------------------------------------------------------------
+ * 小白导读：
+ *  - 想换「主题色」→ 改下面 :root 里的 --primary 和几个 leaf 绿色变量
+ *  - 想换「背景色」→ 改 --background（浅色模式）和 .dark 里的同名变量
+ *  - 颜色用的是 HSL 格式：色相 饱和度% 亮度%
+ *      色相：0=红 30=橙 60=黄 120=绿 200=蓝 260=紫
+ *      饱和度越低越灰，亮度越高越接近白色
+ *  - 改完保存，网页会立刻热更新，大胆试！
+ * ============================================================ */
+
+@tailwind base;       /* Tailwind 基础样式（重置浏览器默认样式） */
+@tailwind components; /* Tailwind 组件层 */
+@tailwind utilities;  /* Tailwind 工具类（px-4、text-sm 这些都来自这里） */
+
+@layer base {
+  /* ---------- 浅色模式（白天） ---------- */
+  :root {
+    /* 背景：带一点点暖的米白色，像纸一样（60=黄色相，11% 极淡） */
+    --background: 60 11% 98%;
+    /* 正文文字：很深的墨绿色，比纯黑柔和 */
+    --foreground: 150 10% 16%;
+
+    --card: 0 0% 100%;                 /* 卡片底色：纯白 */
+    --card-foreground: 150 10% 16%;    /* 卡片里的文字 */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 10% 16%;
+
+    /* 主题色：鼠尾草绿，用于按钮、链接强调（140=绿色相） */
+    --primary: 140 30% 36%;
+    --primary-foreground: 60 20% 97%;  /* 主题色按钮上的文字 */
+
+    --secondary: 120 14% 94%;          /* 页脚等次要区域底色 */
+    --secondary-foreground: 150 18% 24%;
+
+    --muted: 90 10% 95%;               /* 弱化区域底色 */
+    --muted-foreground: 140 6% 44%;    /* 弱化文字（日期、摘要等灰字） */
+
+    --accent: 130 24% 93%;             /* 鼠标悬停时的浅绿底色 */
+    --accent-foreground: 145 32% 28%;
+
+    --destructive: 0 72% 51%;          /* 危险操作红（删除按钮等） */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 100 10% 89%;             /* 分隔线/边框：很淡的绿灰 */
+    --input: 100 10% 85%;
+    --ring: 140 30% 40%;               /* 键盘聚焦时的光圈颜色 */
+
+    --radius: 0.75rem;                 /* 全局圆角大小：越大越圆润 */
+
+    /* 侧边栏系列（本项目未用到，保持与主题一致即可） */
+    --sidebar-background: 60 11% 98%;
+    --sidebar-foreground: 150 10% 16%;
+    --sidebar-primary: 140 30% 36%;
+    --sidebar-primary-foreground: 60 20% 97%;
+    --sidebar-accent: 130 24% 93%;
+    --sidebar-accent-foreground: 145 32% 28%;
+    --sidebar-border: 100 10% 89%;
+    --sidebar-ring: 140 30% 40%;
+  }
+
+  /* ---------- 深色模式（夜晚） ----------
+   * 与上面一一对应，整体思路：背景变深墨绿，文字变浅灰绿，
+   * 主题色提亮（深底上需要更亮的绿色才显眼） */
+  .dark {
+    --background: 150 14% 9%;
+    --foreground: 90 12% 90%;
+    --card: 150 12% 12%;
+    --card-foreground: 90 12% 90%;
+    --popover: 150 12% 12%;
+    --popover-foreground: 90 12% 90%;
+    --primary: 130 30% 62%;
+    --primary-foreground: 150 30% 10%;
+    --secondary: 150 10% 16%;
+    --secondary-foreground: 90 12% 88%;
+    --muted: 150 8% 16%;
+    --muted-foreground: 120 6% 60%;
+    --accent: 145 16% 18%;
+    --accent-foreground: 130 30% 72%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 8% 20%;
+    --input: 150 8% 24%;
+    --ring: 130 30% 55%;
+    --sidebar-background: 150 14% 9%;
+    --sidebar-foreground: 90 12% 90%;
+    --sidebar-primary: 130 30% 62%;
+    --sidebar-primary-foreground: 150 30% 10%;
+    --sidebar-accent: 145 16% 18%;
+    --sidebar-accent-foreground: 130 30% 72%;
+    --sidebar-border: 150 8% 20%;
+    --sidebar-ring: 130 30% 55%;
+  }
+}
+
+@layer base {
+  /* 让所有元素的边框默认使用 --border 变量定义的颜色 */
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;             /* 页面内跳转时平滑滚动 */
+    -webkit-font-smoothing: antialiased; /* 让文字在屏幕上更细腻 */
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    /* bg-background / text-foreground / font-sans 分别对应：
+       上面的背景变量、文字变量、tailwind.config.js 里配置的字体 */
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: 'ss01';
+  }
+
+  /* 鼠标选中文字时的高亮色：淡绿 */
+  ::selection {
+    @apply bg-leaf-200/70 text-leaf-900;
+  }
+
+  /* ---------- 滚动条美化（仅 Chrome/Edge/Safari 生效） ---------- */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-leaf-300/60;
+    border: 3px solid transparent;  /* 用透明边框制造「变细」的视觉效果 */
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-leaf-400/70;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* 首页各区块入场动画的「错峰延迟」：
+     配合 animate-fade-up 使用，让区块一个接一个浮现，而不是同时出现 */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.15s; }
+  .stagger-3 { animation-delay: 0.25s; }
+  .stagger-4 { animation-delay: 0.35s; }
+  .stagger-5 { animation-delay: 0.45s; }
+
+  /* 标题下划线动画（极简博客常见的 hover 效果）：
+     原理是用一条 1.5px 的渐变背景线当「下划线」，
+     平时宽度 0%（看不见），悬停时展开到 100% */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1.5px;              /* 初始：线的宽度为 0 */
+    background-repeat: no-repeat;
+    background-position: left calc(100% - 0.05em); /* 线贴在文字底部 */
+    transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    padding-bottom: 0.05em;
+  }
+  .link-underline:hover,
+  a:hover > .link-underline,
+  .group:hover .link-underline {
+    background-size: 100% 1.5px;            /* 悬停：线展开到整行宽 */
+  }
+}

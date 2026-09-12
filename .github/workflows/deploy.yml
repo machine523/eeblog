@@ -1,0 +1,60 @@
+# ============================================
+# 自动部署工作流：push 到 main 分支后，
+# GitHub 自动构建博客并上传到云服务器
+#
+# 使用前需要在仓库 Settings → Secrets and variables → Actions
+# 配置 4 个 Secrets（详见 docs/部署到云服务器.md 第 4 步）：
+#   SERVER_HOST     服务器公网 IP
+#   SERVER_USER     SSH 用户名（如 root）
+#   SERVER_SSH_KEY  部署专用私钥（blog-deploy 文件全部内容）
+#   SERVER_PORT     SSH 端口（一般 22）
+# ============================================
+
+name: 部署博客到云服务器
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # 允许在 Actions 页面手动点按钮触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取仓库代码
+      - uses: actions/checkout@v4
+
+      # 2. 准备 Node 环境（npm ci 会用 package-lock.json 精确安装）
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. 安装依赖并构建，产物在 dist/
+      - run: npm ci
+      - run: npm run build
+
+      # 4. 把 dist 里的文件传到服务器的临时目录
+      - name: 上传网站文件
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "dist/*"
+          target: "/var/www/blog-new/"
+          strip_components: 1
+
+      # 5. 原子切换：新版就位后再替换旧版，避免访问到传了一半的文件
+      - name: 切换上线目录
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            rm -rf /var/www/blog-old
+            if [ -d /var/www/blog ]; then mv /var/www/blog /var/www/blog-old; fi
+            mv /var/www/blog-new /var/www/blog
