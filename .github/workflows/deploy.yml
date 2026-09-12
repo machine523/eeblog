@@ -18,23 +18,35 @@ on:
   workflow_dispatch:   # 允许在 Actions 页面手动点按钮触发
 
 jobs:
-  build-and-deploy:
+  # 任务一：构建验证（每次 push 都跑，确认代码能正常打包）
+  build:
     runs-on: ubuntu-latest
     steps:
-      # 1. 拉取仓库代码
       - uses: actions/checkout@v4
-
-      # 2. 准备 Node 环境（npm ci 会用 package-lock.json 精确安装）
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      # 3. 安装依赖并构建，产物在 dist/
       - run: npm ci
       - run: npm run build
 
-      # 4. 把 dist 里的文件传到服务器的临时目录
+  # 任务二：部署到服务器
+  # ★ 只有在仓库 Settings → Secrets and variables → Actions → Variables
+  #   里创建了 DEPLOY_ENABLED = true 之后才会执行（买好服务器并配好 Secrets 后再开）
+  deploy:
+    needs: build
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      # 把 dist 里的文件传到服务器的临时目录
       - name: 上传网站文件
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -46,7 +58,7 @@ jobs:
           target: "/var/www/blog-new/"
           strip_components: 1
 
-      # 5. 原子切换：新版就位后再替换旧版，避免访问到传了一半的文件
+      # 原子切换：新版就位后再替换旧版，避免访问到传了一半的文件
       - name: 切换上线目录
         uses: appleboy/ssh-action@v1.2.0
         with:
